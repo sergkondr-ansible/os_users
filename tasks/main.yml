@@ -1,0 +1,41 @@
+---
+
+- name: Init default users
+  user:
+    name: "{{ item.name }}"
+    append: "{{ item.append | default('no') }}"
+    comment: "{{ item.user_comment | default(omit) }}"
+    createhome: "{{ item.createhome | default('yes') }}"
+    expires: "{{ item.expires | default(omit) }}"
+    force: "{{ item.force | default('no') }}"
+    group: "{{ item.group | default(omit) }}"
+    groups: "{{ item.groups | default(omit) }}"
+    home: "{{ item.home | default(omit) }}"
+    password: "{{ item.password | default(omit) }}"
+    remove: "{{ item.remove | default('no') }}"
+    shell: "{{ item.shell | default('/bin/bash') }}"
+    state: "{{ item.state | default('present') }}"
+    system: "{{ item.system | default('no') }}"
+    uid: "{{ item.uid | default(omit) }}"
+    update_password: "{{ item.update_password | default('always') }}"
+  with_items:
+    - "{{ os_users }}"
+    - "{{ os_users_default }}"
+  when:
+    - item is defined
+    - (item.name != "{{ ansible_env.SUDO_USER | default('nonexistentuser') }}") or (item.state | default('present') != 'absent')
+
+- name: Init default authorized keys
+  authorized_key:
+    user: "{{ item.user }}"
+    exclusive: "{{ item.exclusive | default('no') }}"
+    key: "{{ item.key | default(omit) }}"
+    key_options: "{{ item.key_options | default(omit) }}"
+    manage_dir: "{{ item.manage_dir | default('yes') }}"
+    path: "{{ item.path | default(omit) }}"
+    state: "{{ item.state | default('present') }}"
+    validate_certs: "{{ item.validate_certs | default('yes') }}"
+  with_items:
+    - "{{ os_users_keys }}"
+    - "{{ os_users_keys_default }}"
+  when: item is defined
